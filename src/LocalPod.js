@@ -23,7 +23,6 @@ class LocalPod {
         this.certs = config.certs
         this.fetch = config.fetch
         this.prefix = config.prefix || ''
-        this.isListening = false
         this.app = express()
         this.app.use(cors())
         this.app.use(express.raw({ type: '*/*' }))
@@ -32,17 +31,19 @@ class LocalPod {
     }
 
     startListening() {
-        if (!this.certs) {
-            console.warn('Only running on http because no certs were supplied')
-            this.server = http.createServer(this.app)
-        } else {
-            this.server = https.createServer(this.certs, this.app)
+        if (!this.isListening()) {
+            if (!this.certs) {
+                console.warn('Only running on http because no certs were supplied')
+                this.server = http.createServer(this.app)
+            } else {
+                this.server = https.createServer(this.certs, this.app)
+            }
+            this.server.listen(this.port, () => console.log(`App listening on port ${this.port}`))
         }
-        this.server.listen(this.port, () => console.log(`App listening on port ${this.port}`))
     }
 
     stopListening() {
-        if (this.server) {
+        if (this.isListening()) {
             this.server.close(err => {
                 if (err) {
                     console.error('Error while closing', err)
@@ -51,6 +52,10 @@ class LocalPod {
             })
             this.server = null
         }
+    }
+
+    isListening() {
+        return this.server !== null
     }
 
     async handleRequest(req, res, next) {
