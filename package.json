@@ -4,7 +4,7 @@
     "type": "git",
     "url": "https://github.com/otto-aa/solid-local-pod"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run a solid pod on localhost",
   "main": "src/index.js",
   "scripts": {
