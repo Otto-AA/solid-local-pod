@@ -15,6 +15,7 @@ This setup will serve the contents from the `/home/user/test` folder at https://
 ```javascript
 const httpsLocalhost = require("https-localhost")()
 const LocalPod = require('solid-local-pod')
+// Note: You could use solid-auth-cli or any other fetch which works in nodejs
 const solidFileFetch = require('solid-local-pod/src/solidFileFetch')
 
 async function main() {
