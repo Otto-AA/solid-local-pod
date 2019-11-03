@@ -29,6 +29,7 @@ const methodHandlers = {
 }
 
 async function fetch(reqPath, options = { method: 'GET' }) {
+    reqPath = decodeURIComponent(reqPath)
     const { method } = options
     const handler = methodHandlers[method.toUpperCase()]
 
@@ -189,7 +190,7 @@ async function getDirectoryContent(dirPath) {
  */
 async function statsToQuads(itemPath, name, stats) {
     const quads = []
-    const subject = namedNode(name)
+    const subject = namedNode(encodeURIComponent(name))
     const a = namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
 
     if (stats.isDirectory()) {
@@ -198,7 +199,7 @@ async function statsToQuads(itemPath, name, stats) {
 
         const itemNames = await fs.promises.readdir(itemPath)
         itemNames.forEach(itemName => {
-            const relPath = path.join(name, itemName)
+            const relPath = encodeURIComponent(path.join(name, itemName))
             quads.push(quad(subject, namedNode(`${prefixes.ldp}contains`), namedNode(relPath)))
         })
     }
