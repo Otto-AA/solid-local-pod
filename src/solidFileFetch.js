@@ -189,10 +189,9 @@ async function getDirectoryContent(dirPath) {
  * @param {Stats} stats
  */
 async function statsToQuads(itemPath, name, stats) {
-    if (name !== '' && stats.isDirectory() && !name.endsWith('/'))
-        name += '/'
+    // TODO: Check if replacing spaces is sufficient or if encodeURIComponent is really necessary
     const quads = []
-    const subject = namedNode(encodeURIComponent(name))
+    const subject = namedNode(name.replace(/ /g, '%20') + ((name !== '' && stats.isDirectory() && !name.endsWith('/')) ? '/' : ''))
     const a = namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
 
     if (stats.isDirectory()) {
@@ -201,8 +200,9 @@ async function statsToQuads(itemPath, name, stats) {
 
         const itemNames = await fs.promises.readdir(itemPath)
         await Promise.all(itemNames.map(async itemName => {
-            let relPath = encodeURIComponent(path.join(name, itemName))
-            if (await isDirectory(path.resolve(itemPath, itemName)))
+            let relPath = path.join(name, itemName).replace(/ /gi, '%20')
+            const absPath = path.resolve(itemPath, itemName)
+            if (await isDirectory(absPath))
                 relPath += '/'
             quads.push(quad(subject, namedNode(`${prefixes.ldp}contains`), namedNode(relPath)))
         }))
