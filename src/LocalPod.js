@@ -65,15 +65,16 @@ class LocalPod {
             if (method.toUpperCase() === 'DELETE' && this.isRoot(path))
                 return res.status(403).send()
 
+            /** @type {Response} */
             const response = await this.fetch(path, { method, headers, body })
             for (const [key, val] of response.headers.entries()) {
                 if (this.isAllowedHeader(key, val))
                     res.set(key, val)
             }
             const status = response.status
-            const buffer = await response.text()
+            const resBody = response.body ? response.body : await response.text()
             res.status(status)
-                .send(buffer)
+                .send(resBody)
         }
         catch (err) {
             console.error(err)
