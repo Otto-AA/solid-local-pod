@@ -189,6 +189,8 @@ async function getDirectoryContent(dirPath) {
  * @param {Stats} stats
  */
 async function statsToQuads(itemPath, name, stats) {
+    if (name !== '' && stats.isDirectory() && !name.endsWith('/'))
+        name += '/'
     const quads = []
     const subject = namedNode(encodeURIComponent(name))
     const a = namedNode('http://www.w3.org/1999/02/22-rdf-syntax-ns#type')
@@ -198,10 +200,12 @@ async function statsToQuads(itemPath, name, stats) {
         quads.push(quad(subject, a, namedNode(`${prefixes.ldp}Container`)))
 
         const itemNames = await fs.promises.readdir(itemPath)
-        itemNames.forEach(itemName => {
-            const relPath = encodeURIComponent(path.join(name, itemName))
+        await Promise.all(itemNames.map(async itemName => {
+            let relPath = encodeURIComponent(path.join(name, itemName))
+            if (await isDirectory(path.resolve(itemPath, itemName)))
+                relPath += '/'
             quads.push(quad(subject, namedNode(`${prefixes.ldp}contains`), namedNode(relPath)))
-        })
+        }))
     }
     quads.push(quad(subject, a, namedNode(`${prefixes.ldp}Resource`)))
     quads.push(quad(subject, namedNode(`${prefixes.terms}modified`), literal(stats.mtime.toISOString())))
